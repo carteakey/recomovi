@@ -16,9 +16,14 @@ keywords = pd.read_csv('final.csv')
 movies = pd.read_csv('data.csv')
 indices = pd.Series(keywords['title'])
 
-count = CountVectorizer()
-count_matrix = count.fit_transform(keywords['bagofwords'])
-cosine_sim = cosine_similarity(count_matrix, count_matrix)
+@st.cache(suppress_st_warning=True)
+def getCosineSim():
+    count = CountVectorizer()
+    count_matrix = count.fit_transform(keywords['bagofwords'])
+    cosine_sim = cosine_similarity(count_matrix, count_matrix)
+    return cosine_sim
+
+cosine_sim = getCosineSim()
 
 def getMediaURL(ids):
     urls = []
