@@ -99,8 +99,8 @@ titles = select['title'].tolist()
 print(title_ids)
 
 #initiate policy and run async function
-asyncio.set_event_loop_policy(
-    asyncio.WindowsSelectorEventLoopPolicy())
+# asyncio.set_event_loop_policy(
+#     asyncio.WindowsSelectorEventLoopPolicy())
 links = asyncio.run(scrape_urls(title_ids))
 
 #populate image grid
