@@ -43,8 +43,14 @@ def getIMDbPosterLink(html):
     soup = BeautifulSoup(html, 'html.parser')
     img_link_tag = soup.find('img', {"class": like(
             'MediaViewerImagestyles__PortraitImage')})
-    img_link = img_link_tag['src']
-    return img_link
+            
+    if img_link_tag is None:
+        img_link_tag = soup.find('img', {"class": like(
+            'MediaViewerImagestyles__LandscapeImage')})
+
+    if img_link_tag is not None:   
+        img_link = img_link_tag['src']
+        return img_link
 
 #finds the first poster in the media gallery and return the media link
 def getIMDbMediaLink(html):
@@ -89,6 +95,8 @@ recommended = recomovie(option)
 select = movies.query('title in @recommended')
 title_ids = getMediaURL(select['imdb_title_id'].tolist())
 titles = select['title'].tolist()
+
+print(title_ids)
 
 #initiate policy and run async function
 asyncio.set_event_loop_policy(
