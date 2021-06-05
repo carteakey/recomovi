@@ -7,4 +7,4 @@ Content Based Movie Recommendation System.
 - Frontend created using Streamlit
 
 The app can be run here : 
-http://recomovi.herokuapp.com/
+https://share.streamlit.io/kartikey-chauhan/recomovi
