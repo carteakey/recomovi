@@ -177,16 +177,12 @@ if button:
 
     progress_bar.progress(100)
 
-    utils.delete(CUSTOM_SCRAPE)
-
-    scrape.to_csv(CUSTOM_SCRAPE, encoding="utf8", mode="a", index=False, header=True)
+    scrape.to_csv(CUSTOM_SCRAPE, encoding="utf8", mode="w", index=False, header=True)
 
     keywords = sc.get_keywords(scrape)
 
-    utils.delete(CUSTOM_KEYWORDS)
-
     keywords.to_csv(
-        CUSTOM_KEYWORDS, encoding="utf8", mode="a", index=False, header=True
+        CUSTOM_KEYWORDS, encoding="utf8", mode="w", index=False, header=True
     )
 
     st.balloons()
