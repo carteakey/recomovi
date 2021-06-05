@@ -94,7 +94,7 @@ def parse_search_page(html):
             vote = container.find("span", attrs={"name": "nv"})["data-value"]
             data["ratingCount"] = vote
 
-            try : 
+            try:
                 # Scrape the directors and actors, bit wonky
                 credit_container = container.find("p", class_="")
                 a_tag = credit_container.find("a")
@@ -125,12 +125,14 @@ def parse_search_page(html):
                     data["directors"] = ",".join(directors)
 
                 else:
-                    stars = stars = [a.get_text() for a in credit_container.find_all("a")]
+                    stars = stars = [
+                        a.get_text() for a in credit_container.find_all("a")
+                    ]
 
                 data["stars"] = ",".join(stars)
 
             except AttributeError:
-                print('========================')
+                print("========================")
                 print(credit_container)
                 pass
             # append to list
