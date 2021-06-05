@@ -118,6 +118,10 @@ movies_year = st.sidebar.slider(
     "Year Range (By Release Date)", 1990, 2021, (2000, 2020)
 )
 
+user_rating = st.sidebar.slider(
+    "User Rating", 0.1, 10.0, (0.1, 10.0), step=0.1
+)
+
 no_of_movies = st.sidebar.slider(
     "Movies Each Year (By Popularity)", 0, 250, 250, step=50
 )
@@ -155,11 +159,7 @@ if button:
         urls = []
         for page in pages:
             urls.append(
-                sc.IMDB_SRCH_URL
-                + "&release_date="
-                + str(year)
-                + "&sort=num_votes,desc&&start="
-                + page
+                utils.getSearchURL(year,page,user_rating)
             )
 
         # asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())

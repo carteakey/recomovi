@@ -91,40 +91,45 @@ def parse_search_page(html):
             vote = container.find("span", attrs={"name": "nv"})["data-value"]
             data["ratingCount"] = vote
 
-            # Scrape the directors and actors, bit wonky
-            credit_container = container.find("p", class_="")
-            a_tag = credit_container.find("a")
+            try : 
+                # Scrape the directors and actors, bit wonky
+                credit_container = container.find("p", class_="")
+                a_tag = credit_container.find("a")
 
-            text = a_tag.previousSibling
+                text = a_tag.previousSibling
 
-            stars = []
+                stars = []
 
-            if text.strip() == "Director:":
-                data["directors"] = a_tag.text
-                stars = [a.get_text() for a in a_tag.find_next_siblings("a")]
+                if text.strip() == "Director:":
+                    data["directors"] = a_tag.text
+                    stars = [a.get_text() for a in a_tag.find_next_siblings("a")]
 
-            elif text.strip() == "Directors:":
-                directors = []
-                while True:
-                    if isinstance(a_tag, element.Tag):
-                        if a_tag.name == "span":
-                            break
+                elif text.strip() == "Directors:":
+                    directors = []
+                    while True:
+                        if isinstance(a_tag, element.Tag):
+                            if a_tag.name == "span":
+                                break
+                            else:
+                                # string concatenation
+                                directors.append(a_tag.text)
+                                a_tag = a_tag.nextSibling
                         else:
-                            # string concatenation
-                            directors.append(a_tag.text)
                             a_tag = a_tag.nextSibling
-                    else:
-                        a_tag = a_tag.nextSibling
 
-                stars = [a.get_text() for a in a_tag.find_next_siblings("a")]
+                    stars = [a.get_text() for a in a_tag.find_next_siblings("a")]
 
-                data["directors"] = ",".join(directors)
+                    data["directors"] = ",".join(directors)
 
-            else:
-                stars = stars = [a.get_text() for a in credit_container.find_all("a")]
+                else:
+                    stars = stars = [a.get_text() for a in credit_container.find_all("a")]
 
-            data["stars"] = ",".join(stars)
+                data["stars"] = ",".join(stars)
 
+            except AttributeError:
+                print('========================')
+                print(credit_container)
+                pass
             # append to list
             movie_list.append(data)
 

@@ -6,6 +6,8 @@ import re
 IMDB_POSTER_URL = "https://www.imdb.com/title/{}/mediaindex?refine=poster"
 IMDB_URL = "https://www.imdb.com/"
 IMDB_TITLE_URL = "https://www.imdb.com/title/{}"
+IMDB_SRCH_URL = "https://www.imdb.com/search/title/?title_type=feature&languages=en"
+
 MATCH_ALL = r".*"
 
 
@@ -80,3 +82,23 @@ def like(string):
         string_ = str(string_)
     regex = MATCH_ALL + re.escape(string_) + MATCH_ALL
     return re.compile(regex, flags=re.DOTALL)
+
+
+def getSearchURL(year, page, rating):
+
+    url = IMDB_SRCH_URL
+
+    if rating is not None:
+        url += "&user_rating=" + str(rating[0]) + "," + str(rating[1])
+
+    if year is not None:
+        url += "&release_date=" + str(year)
+
+    url += "&sort=num_votes,desc"
+
+    if page is not None:
+        url += "&&start=" + page
+
+    print(url)
+
+    return url
