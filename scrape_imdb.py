@@ -2,7 +2,6 @@
 from tqdm import tqdm
 from bs4 import BeautifulSoup, element
 from rake_nltk import Rake
-
 import random
 import aiohttp
 import asyncio

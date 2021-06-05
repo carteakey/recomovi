@@ -9,17 +9,20 @@ import random
 import utils
 import os
 
+from pathlib import Path
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
 
 # globals
 HEADERS = {"Accept-Language": "en-US, en;q=0.5"}
 
-CUSTOM_SCRAPE = os.path.join("tmp/custom_scrape.csv")
-CUSTOM_KEYWORDS = os.path.join("tmp/custom_keywords.csv")
+tmp_dir = Path('tmp')
+tmp_dir.mkdir(parents=True, exist_ok=True)
+CUSTOM_SCRAPE = tmp_dir/"custom_scrape.csv"
+CUSTOM_KEYWORDS = tmp_dir/"custom_keywords.csv"
 
-DEFAULT_SCRAPE = "datasets/default_scrape.csv"
-DEFAULT_KEYWORDS = "datasets/default_keywords.csv"
+DEFAULT_SCRAPE = os.path.join("datasets","default_scrape.csv") 
+DEFAULT_KEYWORDS = os.path.join("datasets","default_keywords.csv") 
 
 # load default dataset on start to cache getCosineSim
 def_keywords = pd.read_csv(DEFAULT_KEYWORDS)
@@ -74,6 +77,36 @@ async def scrape_urls(urls):
     async with aiohttp.ClientSession(headers=HEADERS) as session:
         return await asyncio.gather(*(fetch_and_getlink(session, url) for url in urls))
 
+
+def generate_grid(posters,titles):
+
+    # run async function to get posters
+    links = asyncio.run(scrape_urls(posters))
+
+    # populate image grid
+    col0, col1, col2, col3, col4 = st.beta_columns(5)
+    with col0:
+        st.image(links[0], caption=titles[0])
+    with col1:
+        st.image(links[1], caption=titles[1])
+    with col2:
+        st.image(links[2], caption=titles[2])
+    with col3:
+        st.image(links[3], caption=titles[3])
+    with col4:
+        st.image(links[4], caption=titles[4])
+
+    col5, col6, col7, col8, col9 = st.beta_columns(5)
+    with col5:
+        st.image(links[5], caption=titles[5])
+    with col6:
+        st.image(links[6], caption=titles[6])
+    with col7:
+        st.image(links[7], caption=titles[7])
+    with col8:
+        st.image(links[8], caption=titles[8])
+    with col9:
+        st.image(links[9], caption=titles[9])
 
 # Start of Streamlit
 
@@ -182,6 +215,8 @@ else:
         titles = select["title"].tolist()
         ratings = select["IMDb_rating"].tolist()
 
+        generate_grid(posters,titles)
+
     if dataset == "Scraped":
         
         if os.path.exists(CUSTOM_KEYWORDS) and os.path.isfile(CUSTOM_KEYWORDS):
@@ -203,34 +238,8 @@ else:
             webpages = utils.getTitleURL(select["imdb_title_id"].tolist())
             titles = select["title"].tolist()
             ratings = select["IMDb_rating"].tolist()
-        
+            generate_grid(posters,titles)
+
         else : 
             st.error('No Data Generated')
-
-    # run async function to get posters
-    links = asyncio.run(scrape_urls(posters))
-
-    # populate image grid
-    col0, col1, col2, col3, col4 = st.beta_columns(5)
-    with col0:
-        st.image(links[0], caption=titles[0])
-    with col1:
-        st.image(links[1], caption=titles[1])
-    with col2:
-        st.image(links[2], caption=titles[2])
-    with col3:
-        st.image(links[3], caption=titles[3])
-    with col4:
-        st.image(links[4], caption=titles[4])
-
-    col5, col6, col7, col8, col9 = st.beta_columns(5)
-    with col5:
-        st.image(links[5], caption=titles[5])
-    with col6:
-        st.image(links[6], caption=titles[6])
-    with col7:
-        st.image(links[7], caption=titles[7])
-    with col8:
-        st.image(links[8], caption=titles[8])
-    with col9:
-        st.image(links[9], caption=titles[9])
+    
