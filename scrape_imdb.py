@@ -67,18 +67,19 @@ def parse_search_page(html):
                 data["certificate"] = certificate.text
 
             # Scrape the genre
-            genre = container.find("span", class_="genre").text.strip()
-            data["genre"] = genre
+            genre = container.find("span", class_="genre")
+            if genre is not None:
+                data["genre"] = genre.text.strip()
 
             # Scrape the runtime
             runtime = container.find("span", class_="runtime")
-            
             if runtime is not None:
                 data["runtime"] = runtime.text
 
             # Scrape the description
             description = container.findAll("p", class_="text-muted")
-            data["description"] = description[1].text.strip()
+            if description is not None:
+                data["description"] = description[1].text.strip()
 
             # Scrape the IMDB rating
             imdb = float(container.strong.text)
