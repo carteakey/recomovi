@@ -16,7 +16,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 # globals
 HEADERS = {"Accept-Language": "en-US, en;q=0.5"}
 
-tmp_dir = Path('tmp')
+tmp_dir = Path('/tmp')
 tmp_dir.mkdir(parents=True, exist_ok=True)
 CUSTOM_SCRAPE = tmp_dir/"custom_scrape.csv"
 CUSTOM_KEYWORDS = tmp_dir/"custom_keywords.csv"
