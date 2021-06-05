@@ -7,6 +7,7 @@ import aiohttp
 import asyncio
 import random
 import utils
+import os
 
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
@@ -14,8 +15,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 # globals
 HEADERS = {"Accept-Language": "en-US, en;q=0.5"}
 
-CUSTOM_SCRAPE = "datasets/custom_scrape.csv"
-CUSTOM_KEYWORDS = "datasets/custom_keywords.csv"
+CUSTOM_SCRAPE = os.path.join+"tmp/custom_scrape.csv"
+CUSTOM_KEYWORDS = os.path.join+"tmp/custom_keywords.csv"
 
 DEFAULT_SCRAPE = "datasets/default_scrape.csv"
 DEFAULT_KEYWORDS = "datasets/default_keywords.csv"
@@ -182,24 +183,29 @@ else:
         ratings = select["IMDb_rating"].tolist()
 
     if dataset == "Scraped":
+        
+        if os.path.exists(CUSTOM_KEYWORDS) and os.path.isfile(CUSTOM_KEYWORDS):
+            
+            keywords = pd.read_csv(CUSTOM_KEYWORDS)
+            movies = pd.read_csv(CUSTOM_SCRAPE)
+            indices = pd.Series(keywords["title"])
 
-        keywords = pd.read_csv(CUSTOM_KEYWORDS)
-        movies = pd.read_csv(CUSTOM_SCRAPE)
-        indices = pd.Series(keywords["title"])
+            cosine_sim = getCosineSim(keywords)
 
-        cosine_sim = getCosineSim(keywords)
+            option = st.sidebar.selectbox(
+                "Movie to get recommendations for", movies["title"]
+            )
 
-        option = st.sidebar.selectbox(
-            "Movie to get recommendations for", movies["title"]
-        )
+            recommended = recomovie(option, cosine_sim, keywords, indices)
 
-        recommended = recomovie(option, cosine_sim, keywords, indices)
-
-        select = movies.query("title in @recommended")
-        posters = utils.getMediaURL(select["imdb_title_id"].tolist())
-        webpages = utils.getTitleURL(select["imdb_title_id"].tolist())
-        titles = select["title"].tolist()
-        ratings = select["IMDb_rating"].tolist()
+            select = movies.query("title in @recommended")
+            posters = utils.getMediaURL(select["imdb_title_id"].tolist())
+            webpages = utils.getTitleURL(select["imdb_title_id"].tolist())
+            titles = select["title"].tolist()
+            ratings = select["IMDb_rating"].tolist()
+        
+        else : 
+            st.error('No Data Generated')
 
     # run async function to get posters
     links = asyncio.run(scrape_urls(posters))
