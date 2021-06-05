@@ -135,8 +135,8 @@ dataset = st.sidebar.radio(
     "Dataset",
     ("Default", "Scraped"),
     help="""
-1) Default - Pre-generated dataset with all the filters expanded.
-2_ Scraped - Dataset generated realtime by adjusting sliders.')
+1) Default - Pre-generated dataset with all the filters expanded. \n
+2) Scraped - Dataset generated realtime by adjusting sliders.
 """,
 )
 
@@ -204,7 +204,7 @@ else:
     if dataset == "Default":
 
         option = st.sidebar.selectbox(
-            "Movie to get recommendations for", def_movies["title"]
+            "Movie", def_movies["title"] ,help='Select a movie to get similar suggestions'
         )
 
         recommended = recomovie(option)
