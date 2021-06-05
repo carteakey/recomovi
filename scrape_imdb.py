@@ -72,7 +72,9 @@ def parse_search_page(html):
 
             # Scrape the runtime
             runtime = container.find("span", class_="runtime").text
-            data["runtime"] = runtime
+            
+            if runtime is not None:
+                data["runtime"] = runtime
 
             # Scrape the description
             description = container.findAll("p", class_="text-muted")
