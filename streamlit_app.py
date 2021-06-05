@@ -128,7 +128,7 @@ if button:
                 + page
             )
 
-        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+        # asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
         data = asyncio.run(sc.scrape_urls(urls))
 
         runtime = round(time.time() - start_time, 2)
