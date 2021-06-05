@@ -167,6 +167,8 @@ def get_keywords(df_scrape):
     # Make a copy of the passed dataframe
     df = df_scrape.copy()
     df["stars"].fillna("", inplace=True)
+    df["directors"].fillna("", inplace=True)
+    df["genre"].fillna("", inplace=True)
 
     # initialize Rake
     r = Rake()
