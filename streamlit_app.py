@@ -16,13 +16,13 @@ from sklearn.feature_extraction.text import CountVectorizer
 # globals
 HEADERS = {"Accept-Language": "en-US, en;q=0.5"}
 
-tmp_dir = Path('/tmp')
+tmp_dir = Path("/tmp")
 tmp_dir.mkdir(parents=True, exist_ok=True)
-CUSTOM_SCRAPE = tmp_dir/"custom_scrape.csv"
-CUSTOM_KEYWORDS = tmp_dir/"custom_keywords.csv"
+CUSTOM_SCRAPE = tmp_dir / "custom_scrape.csv"
+CUSTOM_KEYWORDS = tmp_dir / "custom_keywords.csv"
 
-DEFAULT_SCRAPE = os.path.join("datasets","default_scrape.csv") 
-DEFAULT_KEYWORDS = os.path.join("datasets","default_keywords.csv") 
+DEFAULT_SCRAPE = os.path.join("datasets", "default_scrape.csv")
+DEFAULT_KEYWORDS = os.path.join("datasets", "default_keywords.csv")
 
 # load default dataset on start to cache getCosineSim
 def_keywords = pd.read_csv(DEFAULT_KEYWORDS)
@@ -78,7 +78,7 @@ async def scrape_urls(urls):
         return await asyncio.gather(*(fetch_and_getlink(session, url) for url in urls))
 
 
-def generate_grid(posters,titles):
+def generate_grid(posters, titles):
 
     # run async function to get posters
     links = asyncio.run(scrape_urls(posters))
@@ -108,6 +108,7 @@ def generate_grid(posters,titles):
     with col9:
         st.image(links[9], caption=titles[9])
 
+
 # Start of Streamlit
 
 modes = ["Scrape IMDb", "Get Recommendations"]
@@ -118,9 +119,7 @@ movies_year = st.sidebar.slider(
     "Year Range (By Release Date)", 1990, 2021, (2000, 2020)
 )
 
-user_rating = st.sidebar.slider(
-    "User Rating", 0.1, 10.0, (0.1, 10.0), step=0.1
-)
+user_rating = st.sidebar.slider("User Rating", 0.1, 10.0, (0.1, 10.0), step=0.1)
 
 no_of_movies = st.sidebar.slider(
     "Movies Each Year (By Popularity)", 0, 250, 250, step=50
@@ -132,7 +131,14 @@ st.sidebar.header("Get Recommendations")
 
 datasets = []
 
-dataset = st.sidebar.radio("Dataset", ("Default", "Scraped"))
+dataset = st.sidebar.radio(
+    "Dataset",
+    ("Default", "Scraped"),
+    help="""
+1) Default - Pre-generated dataset with all the filters expanded.
+2_ Scraped - Dataset generated realtime by adjusting sliders.')
+""",
+)
 
 if button:
 
@@ -158,9 +164,7 @@ if button:
         data = []
         urls = []
         for page in pages:
-            urls.append(
-                utils.getSearchURL(year,page,user_rating)
-            )
+            urls.append(utils.getSearchURL(year, page, user_rating))
 
         # asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
         data = asyncio.run(sc.scrape_urls(urls))
@@ -211,12 +215,12 @@ else:
         titles = select["title"].tolist()
         ratings = select["IMDb_rating"].tolist()
 
-        generate_grid(posters,titles)
+        generate_grid(posters, titles)
 
     if dataset == "Scraped":
-        
+
         if os.path.exists(CUSTOM_KEYWORDS) and os.path.isfile(CUSTOM_KEYWORDS):
-            
+
             keywords = pd.read_csv(CUSTOM_KEYWORDS)
             movies = pd.read_csv(CUSTOM_SCRAPE)
             indices = pd.Series(keywords["title"])
@@ -234,8 +238,7 @@ else:
             webpages = utils.getTitleURL(select["imdb_title_id"].tolist())
             titles = select["title"].tolist()
             ratings = select["IMDb_rating"].tolist()
-            generate_grid(posters,titles)
+            generate_grid(posters, titles)
 
-        else : 
-            st.error('No Data Generated')
-    
+        else:
+            st.error("No Data Generated")
