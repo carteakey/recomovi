@@ -15,8 +15,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 # globals
 HEADERS = {"Accept-Language": "en-US, en;q=0.5"}
 
-CUSTOM_SCRAPE = os.path.join+"tmp/custom_scrape.csv"
-CUSTOM_KEYWORDS = os.path.join+"tmp/custom_keywords.csv"
+CUSTOM_SCRAPE = os.path.join("tmp/custom_scrape.csv")
+CUSTOM_KEYWORDS = os.path.join("tmp/custom_keywords.csv")
 
 DEFAULT_SCRAPE = "datasets/default_scrape.csv"
 DEFAULT_KEYWORDS = "datasets/default_keywords.csv"
