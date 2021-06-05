@@ -1,135 +1,230 @@
+# imports
 import streamlit as st
-import numpy as np
+import scrape_imdb as sc
 import pandas as pd
+import time
 import aiohttp
 import asyncio
-from bs4 import BeautifulSoup
-from scrape_imdb import like
+import random
+import utils
+
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
 
-IMDB_POSTER_URL = 'https://www.imdb.com/title/{}/mediaindex?refine=poster'
-IMDB_URL = 'https://www.imdb.com/'
+# globals
+HEADERS = {"Accept-Language": "en-US, en;q=0.5"}
 
+CUSTOM_SCRAPE = "datasets/custom_scrape.csv"
+CUSTOM_KEYWORDS = "datasets/custom_keywords.csv"
 
-keywords = pd.read_csv('final.csv')
-movies = pd.read_csv('data.csv')
-indices = pd.Series(keywords['title'])
+DEFAULT_SCRAPE = "datasets/default_scrape.csv"
+DEFAULT_KEYWORDS = "datasets/default_keywords.csv"
 
+# load default dataset on start to cache getCosineSim
+def_keywords = pd.read_csv(DEFAULT_KEYWORDS)
+def_movies = pd.read_csv(DEFAULT_SCRAPE)
+def_indices = pd.Series(def_keywords["title"])
+
+# improves subsequent loading times
 @st.cache(suppress_st_warning=True)
-def getCosineSim():
+def getCosineSim(keywords=def_keywords):
     count = CountVectorizer()
-    count_matrix = count.fit_transform(keywords['bagofwords'])
+    count_matrix = count.fit_transform(keywords["bagofwords"])
     cosine_sim = cosine_similarity(count_matrix, count_matrix)
     return cosine_sim
 
-cosine_sim = getCosineSim()
 
-def getMediaURL(ids):
-    urls = []
-    for id in ids:
-        urls.append(IMDB_POSTER_URL.format(id))
-    return urls
+def_cosine_sim = getCosineSim()
 
-def recomovie(title, cosine_sim=cosine_sim):
+
+def recomovie(
+    title, cosine_sim=def_cosine_sim, keywords=def_keywords, indices=def_indices
+):
     recommended_movies = []
     idx = indices[indices == title].index[0]
     score_series = pd.Series(cosine_sim[idx]).sort_values(ascending=False)
     top_10_indices = list(score_series.iloc[1:11].index)
 
     for i in top_10_indices:
-        recommended_movies.append(list(keywords['title'])[i])
+        recommended_movies.append(list(keywords["title"])[i])
 
     return recommended_movies
 
-#finds the poster tag in the html and returns link
-def getIMDbPosterLink(html):
 
-    soup = BeautifulSoup(html, 'html.parser')
-    img_link_tag = soup.find('img', {"class": like(
-            'MediaViewerImagestyles__PortraitImage')})
-            
-    if img_link_tag is None:
-        img_link_tag = soup.find('img', {"class": like(
-            'MediaViewerImagestyles__LandscapeImage')})
-
-    if img_link_tag is not None:   
-        img_link = img_link_tag['src']
-        return img_link
-
-#finds the first poster in the media gallery and return the media link
-def getIMDbMediaLink(html):
-
-    soup = BeautifulSoup(html, 'html.parser')
-    media_thumb_element = soup.find('div', class_='media_index_thumb_list')
-    media_link_tag = media_thumb_element.find('a')
-    media_link = media_link_tag['href']
-    return IMDB_URL+media_link
-
-#asynchronous request fetching
+# asynchronous request fetching
 async def fetch(session, url):
     async with session.get(url) as response:
         return await response.text()
 
-#asynchronous fetch and get link calls
+
+# asynchronous fetch and get link calls
 async def fetch_and_getlink(session, url):
 
     loop = asyncio.get_event_loop()
     html = await fetch(session, url)
-    html2 = await fetch(session, getIMDbMediaLink(html))
-    paras = await loop.run_in_executor(None, getIMDbPosterLink, html2)
+    html2 = await fetch(session, utils.getIMDbMediaLink(html))
+    paras = await loop.run_in_executor(None, utils.getIMDbPosterLink, html2)
     return paras
 
-#asynchronous wrapper to get details of the passed urls
+
+# asynchronous wrapper to get details of the passed urls
 async def scrape_urls(urls):
-    headers = {"Accept-Language": "en-US, en;q=0.5"}
-    async with aiohttp.ClientSession(headers=headers) as session:
-        return await asyncio.gather(
-            *(fetch_and_getlink(session, url) for url in urls)
+
+    async with aiohttp.ClientSession(headers=HEADERS) as session:
+        return await asyncio.gather(*(fetch_and_getlink(session, url) for url in urls))
+
+
+# Start of Streamlit
+
+modes = ["Scrape IMDb", "Get Recommendations"]
+
+st.sidebar.header("Get Data from IMDb")
+
+movies_year = st.sidebar.slider(
+    "Year Range (By Release Date)", 1990, 2021, (2000, 2020)
+)
+
+no_of_movies = st.sidebar.slider(
+    "Movies Each Year (By Popularity)", 0, 250, 250, step=50
+)
+
+button = st.sidebar.button("Get", key=None, help=None)
+
+st.sidebar.header("Get Recommendations")
+
+datasets = []
+
+dataset = st.sidebar.radio("Dataset", ("Default", "Scraped"))
+
+if button:
+
+    scrape = pd.DataFrame()
+
+    min = movies_year[0]
+    max = movies_year[1] + 1
+
+    pages = [str(i) for i in range(1, no_of_movies, 50)]
+    years = [i for i in range(min, max)]
+
+    placeholder = st.empty()
+    progress_bar = st.progress(0)
+
+    for year in years:
+
+        percentage = (year - min) / (max - min)
+        progress_bar.progress(percentage)
+
+        placeholder.text("Scraping Year: {}".format(str(year)))
+
+        start_time = time.time()
+        data = []
+        urls = []
+        for page in pages:
+            urls.append(
+                sc.IMDB_SRCH_URL
+                + "&release_date="
+                + str(year)
+                + "&sort=num_votes,desc&&start="
+                + page
+            )
+
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+        data = asyncio.run(sc.scrape_urls(urls))
+
+        runtime = round(time.time() - start_time, 2)
+        placeholder.text("Scraping Year: {} - {} seconds ".format(str(year), runtime))
+
+        for rec in data:
+            scrape = scrape.append(rec, ignore_index=True)
+
+        time.sleep(random.randint(8, 15))
+
+        placeholder.empty()
+
+    progress_bar.progress(100)
+
+    sc.delete(CUSTOM_SCRAPE)
+
+    scrape.to_csv(CUSTOM_SCRAPE, encoding="utf8", mode="a", index=False, header=True)
+
+    keywords = sc.get_keywords(scrape)
+
+    sc.delete(CUSTOM_KEYWORDS)
+
+    keywords.to_csv(
+        CUSTOM_KEYWORDS, encoding="utf8", mode="a", index=False, header=True
+    )
+
+    st.balloons()
+
+    st.write(scrape)
+    st.markdown(utils.get_table_download_link(scrape), unsafe_allow_html=True)
+
+else:
+
+    posters = []
+    titles = []
+    ratings = []
+    webpages = []
+
+    if dataset == "Default":
+
+        option = st.sidebar.selectbox(
+            "Movie to get recommendations for", def_movies["title"]
         )
 
-#Start of Streamlit
+        recommended = recomovie(option)
 
-st.title('Movie Recommender')
+        select = def_movies.query("title in @recommended")
+        posters = utils.getMediaURL(select["imdb_title_id"].tolist())
+        webpages = utils.getTitleURL(select["imdb_title_id"].tolist())
+        titles = select["title"].tolist()
+        ratings = select["IMDb_rating"].tolist()
 
-option = st.selectbox(
-    'Select a movie to get recommendations', movies['title'])
+    if dataset == "Scraped":
 
-recommended = recomovie(option)
+        keywords = pd.read_csv(CUSTOM_KEYWORDS)
+        movies = pd.read_csv(CUSTOM_SCRAPE)
+        indices = pd.Series(keywords["title"])
 
-select = movies.query('title in @recommended')
-title_ids = getMediaURL(select['imdb_title_id'].tolist())
-titles = select['title'].tolist()
+        cosine_sim = getCosineSim(keywords)
 
-print(title_ids)
+        option = st.sidebar.selectbox(
+            "Movie to get recommendations for", movies["title"]
+        )
 
-#initiate policy and run async function
-# asyncio.set_event_loop_policy(
-#     asyncio.WindowsSelectorEventLoopPolicy())
-links = asyncio.run(scrape_urls(title_ids))
+        recommended = recomovie(option, cosine_sim, keywords, indices)
 
-#populate image grid
-col0, col1, col2, col3, col4 = st.beta_columns(5)
-with col0:
-    st.image(links[0], caption=titles[0])
-with col1:
-    st.image(links[1], caption=titles[1])
-with col2:
-    st.image(links[2], caption=titles[2])
-with col3:
-    st.image(links[3], caption=titles[3])
-with col4:
-    st.image(links[4], caption=titles[4])
+        select = movies.query("title in @recommended")
+        posters = utils.getMediaURL(select["imdb_title_id"].tolist())
+        webpages = utils.getTitleURL(select["imdb_title_id"].tolist())
+        titles = select["title"].tolist()
+        ratings = select["IMDb_rating"].tolist()
 
+    # run async function to get posters
+    links = asyncio.run(scrape_urls(posters))
 
-col5, col6, col7, col8, col9 = st.beta_columns(5)
-with col5:
-    st.image(links[5], caption=titles[5])
-with col6:
-    st.image(links[6], caption=titles[6])
-with col7:
-    st.image(links[7], caption=titles[7])
-with col8:
-    st.image(links[8], caption=titles[8])
-with col9:
-    st.image(links[9], caption=titles[9])
+    # populate image grid
+    col0, col1, col2, col3, col4 = st.beta_columns(5)
+    with col0:
+        st.image(links[0], caption=titles[0])
+    with col1:
+        st.image(links[1], caption=titles[1])
+    with col2:
+        st.image(links[2], caption=titles[2])
+    with col3:
+        st.image(links[3], caption=titles[3])
+    with col4:
+        st.image(links[4], caption=titles[4])
+
+    col5, col6, col7, col8, col9 = st.beta_columns(5)
+    with col5:
+        st.image(links[5], caption=titles[5])
+    with col6:
+        st.image(links[6], caption=titles[6])
+    with col7:
+        st.image(links[7], caption=titles[7])
+    with col8:
+        st.image(links[8], caption=titles[8])
+    with col9:
+        st.image(links[9], caption=titles[9])
