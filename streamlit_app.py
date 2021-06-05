@@ -1,4 +1,5 @@
 # imports
+from google.protobuf.symbol_database import Default
 import streamlit as st
 import scrape_imdb as sc
 import pandas as pd
@@ -12,6 +13,7 @@ import os
 from pathlib import Path
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
+st.set_page_config(layout="wide")
 
 # globals
 HEADERS = {"Accept-Language": "en-US, en;q=0.5"}
@@ -111,21 +113,44 @@ def generate_grid(posters, titles):
 
 # Start of Streamlit
 
-modes = ["Scrape IMDb", "Get Recommendations"]
-
 st.sidebar.header("Get Data from IMDb")
 
-movies_year = st.sidebar.slider(
+filters = st.sidebar.beta_expander('Filters')
+
+movies_year = filters.slider(
     "Year Range (By Release Date)", 1990, 2021, (2000, 2020)
 )
 
-user_rating = st.sidebar.slider("User Rating", 0.1, 10.0, (0.1, 10.0), step=0.1)
+user_rating = filters.slider("User Rating", 0.1, 10.0, (0.1, 10.0), step=0.1)
 
-no_of_movies = st.sidebar.slider(
+no_of_movies = filters.slider(
     "Movies Each Year (By Popularity)", 0, 250, 250, step=50
 )
 
-button = st.sidebar.button("Get", key=None, help=None)
+genres = [
+    "Action",
+    "Adventure",
+    "Animation",
+    "Biography",
+    "Comedy",
+    "Crime",
+    "Drama",
+    "Family",
+    "Fantasy",
+    "History",
+    "Horror",
+    "Music",
+    "Mystery",
+    "Romance",
+    "Sci-Fi",
+    "Thriller",
+    "War",
+    "Western",
+]
+
+genre = filters.multiselect("Genre",genres, default=None)
+
+button = filters.button("Get", key=None, help=None)
 
 st.sidebar.header("Get Recommendations")
 
@@ -164,7 +189,7 @@ if button:
         data = []
         urls = []
         for page in pages:
-            urls.append(utils.getSearchURL(year, page, user_rating))
+            urls.append(utils.getSearchURL(year, page, user_rating, genre))
 
         # asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
         data = asyncio.run(sc.scrape_urls(urls))
@@ -204,7 +229,10 @@ else:
     if dataset == "Default":
 
         option = st.sidebar.selectbox(
-            "Movie", def_movies["title"] ,help='Select a movie to get similar suggestions'
+            "Movie",
+            def_movies["title"],
+            index = 6000, #Mastapiece 
+            help="Select a movie to get similar suggestions",
         )
 
         recommended = recomovie(option)
@@ -242,3 +270,4 @@ else:
 
         else:
             st.error("No Data Generated")
+            st.stop()

@@ -84,7 +84,7 @@ def like(string):
     return re.compile(regex, flags=re.DOTALL)
 
 
-def getSearchURL(year, page, rating):
+def getSearchURL(year, page, rating, genre):
 
     url = IMDB_SRCH_URL
 
@@ -99,6 +99,9 @@ def getSearchURL(year, page, rating):
     if page is not None:
         url += "&&start=" + page
 
+    if genre is not None:
+        url+='&genres='+','.join(genre)
+    
     print(url)
 
     return url
