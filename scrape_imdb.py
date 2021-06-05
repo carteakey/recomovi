@@ -71,10 +71,10 @@ def parse_search_page(html):
             data["genre"] = genre
 
             # Scrape the runtime
-            runtime = container.find("span", class_="runtime").text
+            runtime = container.find("span", class_="runtime")
             
             if runtime is not None:
-                data["runtime"] = runtime
+                data["runtime"] = runtime.text
 
             # Scrape the description
             description = container.findAll("p", class_="text-muted")
