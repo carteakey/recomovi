@@ -143,13 +143,13 @@ if button:
 
     progress_bar.progress(100)
 
-    sc.delete(CUSTOM_SCRAPE)
+    utils.delete(CUSTOM_SCRAPE)
 
     scrape.to_csv(CUSTOM_SCRAPE, encoding="utf8", mode="a", index=False, header=True)
 
     keywords = sc.get_keywords(scrape)
 
-    sc.delete(CUSTOM_KEYWORDS)
+    utils.delete(CUSTOM_KEYWORDS)
 
     keywords.to_csv(
         CUSTOM_KEYWORDS, encoding="utf8", mode="a", index=False, header=True
