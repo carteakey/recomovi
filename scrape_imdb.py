@@ -1,6 +1,6 @@
 # imports
-from tqdm import tqdm
 from bs4 import BeautifulSoup, element
+from tqdm import tqdm
 from rake_nltk import Rake
 import random
 import aiohttp
@@ -33,7 +33,8 @@ def parse_search_page(html):
     page_html = BeautifulSoup(html, "html.parser")
 
     # Select all the 50 movie containers from a single page
-    mv_containers = page_html.find_all("div", class_="lister-item mode-advanced")
+    mv_containers = page_html.find_all(
+        "div", class_="lister-item mode-advanced")
 
     # For every movie of these 50
     for container in mv_containers:
@@ -105,7 +106,8 @@ def parse_search_page(html):
 
                 if text.strip() == "Director:":
                     data["directors"] = a_tag.text
-                    stars = [a.get_text() for a in a_tag.find_next_siblings("a")]
+                    stars = [a.get_text()
+                             for a in a_tag.find_next_siblings("a")]
 
                 elif text.strip() == "Directors:":
                     directors = []
@@ -120,7 +122,8 @@ def parse_search_page(html):
                         else:
                             a_tag = a_tag.nextSibling
 
-                    stars = [a.get_text() for a in a_tag.find_next_siblings("a")]
+                    stars = [a.get_text()
+                             for a in a_tag.find_next_siblings("a")]
 
                     data["directors"] = ",".join(directors)
 
@@ -132,8 +135,6 @@ def parse_search_page(html):
                 data["stars"] = ",".join(stars)
 
             except AttributeError:
-                print("========================")
-                print(credit_container)
                 pass
             # append to list
             movie_list.append(data)
@@ -186,9 +187,11 @@ def get_keywords(df_scrape):
     df["directors"] = df["directors"].map(lambda x: x.split(","))
 
     for index, row in df.iterrows():
-        df.at[index, "genre"] = [x.lower().replace(" ", "") for x in row["genre"]]
+        df.at[index, "genre"] = [x.lower().replace(" ", "")
+                                 for x in row["genre"]]
 
-        df.at[index, "stars"] = [x.lower().replace(" ", "") for x in row["stars"]]
+        df.at[index, "stars"] = [x.lower().replace(" ", "")
+                                 for x in row["stars"]]
 
         df.at[index, "directors"] = [
             x.lower().replace(" ", "") for x in row["directors"]
@@ -198,7 +201,8 @@ def get_keywords(df_scrape):
 
     # mentioning 'genre', 'directors', 'stars' multiple times to increase weight, personal preference
 
-    columns = ["genre", "directors", "stars", "genre", "directors", "stars", "keywords"]
+    columns = ["genre", "directors", "stars",
+               "genre", "directors", "stars", "keywords"]
     for index, row in df.iterrows():
         words = ""
         for col in columns:
@@ -235,7 +239,6 @@ def scrape(pages, years):
                 )
 
             # Asynchronously get data from server
-            asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
             data = asyncio.run(scrape_urls(urls))
 
             print("\n Scraping Year:" + year)
@@ -247,7 +250,7 @@ def scrape(pages, years):
                 scrape = scrape.append(rec, ignore_index=True)
 
             # Waiting randomly to not overload server and get banned :)
-            time.sleep(random.randint(8, 15))
+            time.sleep(random.randint(3, 4))
 
         print("Writing to csv")
 

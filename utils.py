@@ -100,8 +100,6 @@ def getSearchURL(year, page, rating, genre):
         url += "&&start=" + page
 
     if genre is not None:
-        url+='&genres='+','.join(genre)
-    
-    print(url)
+        url += '&genres='+','.join(genre)
 
     return url
