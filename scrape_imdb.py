@@ -8,6 +8,7 @@ import asyncio
 import time
 import pandas as pd
 import utils
+import streamlit as st
 
 # globals
 IMDB_TITLE_URL = "https://www.imdb.com/title/tt"
@@ -214,36 +215,32 @@ def get_keywords(df_scrape):
     return df
 
 
-def scrape(pages, years):
+def scrape(pages, years, user_rating, genre, data_file=DEFAULT_SCRAPE, keywords_file=DEFAULT_KEYWORDS):
 
     scrape = pd.DataFrame()
+
+    placeholder = st.empty()
+    progress_bar = st.progress(0)
 
     try:
 
         # Loop through years
         for year in tqdm(years):
-
-            start_time = time.time()
-
+            
             data = []
             urls = []
 
-            # Loop through each page and append url to list
+            # show progress
+            start_time = time.time()
+            percentage = (year - years[0]) / (years[-1] - years[0])
+            progress_bar.progress(percentage)
+            placeholder.text("Scraping Year: {}".format(str(year)))
+
             for page in pages:
-                urls.append(
-                    IMDB_SRCH_URL
-                    + "&release_date="
-                    + year
-                    + "&sort=num_votes,desc&&start="
-                    + page
-                )
+                urls.append(utils.getSearchURL(year, page, user_rating, genre))
 
             # Asynchronously get data from server
             data = asyncio.run(scrape_urls(urls))
-
-            print("\n Scraping Year:" + year)
-            print(*urls, sep="\n")
-            print("--- %s seconds ---" % (time.time() - start_time))
 
             # Append response to dataframe
             for rec in data:
@@ -251,25 +248,35 @@ def scrape(pages, years):
 
             # Waiting randomly to not overload server and get banned :)
             time.sleep(random.randint(3, 4))
+            
+            #check runtime
+            runtime = round(time.time() - start_time, 2)
+            print("\n Scraping Year:" + str(year))
+            print(*urls, sep="\n")
+            print("--- %s seconds ---" % (runtime))
+            placeholder.text("Scraping Year: {}".format(str(year)))
+            placeholder.empty()
 
-        print("Writing to csv")
-
-        # Remove if file exists
-        utils.delete(DEFAULT_SCRAPE)
+        utils.delete(data_file)
+        utils.delete(keywords_file)
 
         scrape.to_csv(
-            DEFAULT_SCRAPE, encoding="utf8", mode="a", index=False, header=True
+            data_file, encoding="utf8", mode="a", index=False, header=True
         )
-
-        print("Extracting Keywords")
-
-        # Remove if file exists
-        utils.delete(DEFAULT_KEYWORDS)
 
         keywords = get_keywords(scrape)
+
         keywords.to_csv(
-            DEFAULT_KEYWORDS, encoding="utf8", mode="a", index=False, header=True
+            keywords_file, encoding="utf8", mode="a", index=False, header=True
         )
+
+        csv = convert_df(scrape)
+        st.download_button('Download data as CSV', csv, file_name=None,
+                           mime=None, key=None, help=None, on_click=None, args=None, kwargs=None)
+
+        progress_bar.progress(100)
+        st.balloons()
+        st.write(scrape)
 
         print("Done....")
 
@@ -280,7 +287,7 @@ def scrape(pages, years):
 
 if __name__ == "__main__":
 
-    pages = [str(i) for i in range(1, 251, 50)]
-    years_url = [str(i) for i in range(1990, 2022)]
+    pages = [i for i in range(1, 251, 50)]
+    years = [i for i in range(1990, 2022)]
 
-    scrape(pages, years_url)
+    scrape(pages, years, None, None)

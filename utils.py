@@ -7,7 +7,6 @@ IMDB_POSTER_URL = "https://www.imdb.com/title/{}/mediaindex?refine=poster"
 IMDB_URL = "https://www.imdb.com/"
 IMDB_TITLE_URL = "https://www.imdb.com/title/{}"
 IMDB_SRCH_URL = "https://www.imdb.com/search/title/?title_type=feature&languages=en"
-
 MATCH_ALL = r".*"
 
 
@@ -97,7 +96,7 @@ def getSearchURL(year, page, rating, genre):
     url += "&sort=num_votes,desc"
 
     if page is not None:
-        url += "&&start=" + page
+        url += "&&start=" + str(page)
 
     if genre is not None:
         url += '&genres='+','.join(genre)

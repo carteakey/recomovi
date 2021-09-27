@@ -1,6 +1,7 @@
-# imports
+from pathlib import Path
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.feature_extraction.text import CountVectorizer
 import streamlit as st
-import scrape_imdb as sc
 import pandas as pd
 import time
 import aiohttp
@@ -8,11 +9,7 @@ import asyncio
 import random
 import os
 
-from pathlib import Path
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.feature_extraction.text import CountVectorizer
-
-
+import scrape_imdb as sc
 import utils
 import omdb
 
@@ -33,8 +30,6 @@ def_movies = pd.read_csv(DEFAULT_SCRAPE)
 def_indices = pd.Series(def_keywords["title"])
 
 # improves subsequent loading times
-
-
 @st.cache
 def getCosineSim(keywords=def_keywords):
     count = CountVectorizer()
@@ -65,38 +60,12 @@ def recomovi(
 def convert_df(df):
     return df.to_csv().encode('utf-8')
 
-# asynchronous request fetching
-
-
-async def fetch(session, url):
-    async with session.get(url) as response:
-        return await response.text()
-
-# asynchronous fetch and get link calls
-
-
-async def fetch_and_getlink(session, url):
-
-    loop = asyncio.get_event_loop()
-    html = await fetch(session, url)
-    html2 = await fetch(session, utils.getIMDbMediaLink(html))
-    paras = await loop.run_in_executor(None, utils.getIMDbPosterLink, html2)
-    return paras
-
-# asynchronous wrapper to get details of the passed urls
-
-
-async def scrape_urls(urls):
-    async with aiohttp.ClientSession(headers=HEADERS) as session:
-        return await asyncio.gather(*(fetch_and_getlink(session, url) for url in urls))
-
 
 def generate_grid(title_id_list):
 
     Titles = []
     Posters = []
 
-    # run async function to get posters #replaced by OMDB API
     # links = asyncio.run(scrape_urls(posters))
 
     for title_id in title_id_list:
@@ -132,9 +101,9 @@ def generate_grid(title_id_list):
 
 
 # Start of Streamlit
-st.sidebar.header("Get Data from IMDb")
+st.header("Get Data from IMDb")
 
-filters = st.sidebar.expander('Filters')
+filters = st.expander('Filters')
 
 movies_year = filters.slider(
     "Year Range (By Release Date)", 1990, 2021, (2000, 2020))
@@ -169,17 +138,16 @@ genre = filters.multiselect("Genre", genres, default=None)
 
 get_button = filters.button("Get", key=None, help=None)
 
-st.sidebar.header("Get Recommendations")
+st.header("Get Recommendations")
 
-dataset = st.sidebar.radio(
+dataset = st.radio(
     "Dataset",
     ("Default", "Scraped"),
-    help="""1) Default - Pre-generated dataset with all the filters expanded. \n2) Scraped - Dataset generated realtime by adjusting sliders."""
+    help="""1) Default - Pre-generated dataset with all the filters expanded. 
+    \n 2) Scraped - Dataset generated realtime by adjusting sliders."""
 )
 
 if get_button:
-
-    scrape = pd.DataFrame()
 
     min = movies_year[0]
     max = movies_year[1] + 1
@@ -187,63 +155,15 @@ if get_button:
     pages = [str(i) for i in range(1, no_of_movies, 50)]
     years = [i for i in range(min, max)]
 
-    placeholder = st.empty()
-    progress_bar = st.progress(0)
-
-    for year in years:
-
-        percentage = (year - min) / (max - min)
-        progress_bar.progress(percentage)
-
-        placeholder.text("Scraping Year: {}".format(str(year)))
-        start_time = time.time()
-
-        data = []
-        urls = []
-
-        for page in pages:
-            urls.append(utils.getSearchURL(year, page, user_rating, genre))
-
-        data = asyncio.run(sc.scrape_urls(urls))
-
-        runtime = round(time.time() - start_time, 2)
-
-        placeholder.text(
-            "Scraping Year: {} - {} seconds ".format(str(year), runtime))
-
-        for rec in data:
-            scrape = scrape.append(rec, ignore_index=True)
-
-        time.sleep(random.randint(3, 5))
-
-        placeholder.empty()
-
-    progress_bar.progress(100)
-
-    scrape.to_csv(CUSTOM_SCRAPE, encoding="utf8",
-                  mode="w", index=False, header=True)
-
-    keywords = sc.get_keywords(scrape)
-
-    keywords.to_csv(
-        CUSTOM_KEYWORDS, encoding="utf8", mode="w", index=False, header=True
-    )
-
-    st.balloons()
-
-    st.write(scrape)
-
-    csv = convert_df(scrape)
-
-    st.download_button('Download data as CSV', csv, file_name=None,
-                       mime=None, key=None, help=None, on_click=None, args=None, kwargs=None)
+    sc.scrape(pages, years, user_rating, genre,
+              data_file=CUSTOM_SCRAPE, keywords_file=CUSTOM_KEYWORDS)
 
 else:
 
     titles = def_movies['title']
     movies = def_movies
 
-    option = st.sidebar.selectbox(
+    option = st.selectbox(
         "Movie",
         titles,
         help="Select a movie to get similar suggestions",

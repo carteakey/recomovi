@@ -1,4 +1,3 @@
-/__pycache__
-/test.py
-/nb.ipynb
-/env
+__pycache__
+env
+.streamlit
