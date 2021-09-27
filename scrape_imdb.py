@@ -232,7 +232,7 @@ def scrape(pages, years, user_rating, genre, data_file=DEFAULT_SCRAPE, keywords_
 
             # show progress
             start_time = time.time()
-            percentage = (year - years[0]) / (years[-1] - years[0])
+            percentage = (year - years[0]) / (years[-1]+1 - years[0])
             progress_bar.progress(percentage)
             placeholder.text("Scraping Year: {}".format(str(year)))
 
@@ -245,7 +245,7 @@ def scrape(pages, years, user_rating, genre, data_file=DEFAULT_SCRAPE, keywords_
             # Append response to dataframe
             for rec in data:
                 scrape = scrape.append(rec, ignore_index=True)
-
+                print(rec)
             # Waiting randomly to not overload server and get banned :)
             time.sleep(random.randint(3, 4))
             
@@ -288,6 +288,6 @@ def scrape(pages, years, user_rating, genre, data_file=DEFAULT_SCRAPE, keywords_
 if __name__ == "__main__":
 
     pages = [i for i in range(1, 251, 50)]
-    years = [i for i in range(1990, 2022)]
+    years = [i for i in range(2021, 2022)]
 
     scrape(pages, years, None, None)
