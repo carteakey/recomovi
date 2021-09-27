@@ -16,17 +16,16 @@ from sklearn.feature_extraction.text import CountVectorizer
 import utils
 import omdb
 
+# check if tmp exists, otherwise create it
+tmp_dir = Path("/tmp")
+tmp_dir.mkdir(parents=True, exist_ok=True)
+
 # globals
 HEADERS = {"Accept-Language": "en-US, en;q=0.5"}
 CUSTOM_SCRAPE = tmp_dir / "custom_scrape.csv"
 CUSTOM_KEYWORDS = tmp_dir / "custom_keywords.csv"
 DEFAULT_SCRAPE = os.path.join("datasets", "default_scrape.csv")
 DEFAULT_KEYWORDS = os.path.join("datasets", "default_keywords.csv")
-
-# check if tmp exists, otherwise create it
-tmp_dir = Path("/tmp")
-tmp_dir.mkdir(parents=True, exist_ok=True)
-
 
 # load default dataset on start to cache getCosineSim
 def_keywords = pd.read_csv(DEFAULT_KEYWORDS)
