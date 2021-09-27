@@ -174,8 +174,7 @@ st.sidebar.header("Get Recommendations")
 dataset = st.sidebar.radio(
     "Dataset",
     ("Default", "Scraped"),
-    help="""1) Default - Pre-generated dataset with all the filters expanded. \n
-    2) Scraped - Dataset generated realtime by adjusting sliders."""
+    help="""1) Default - Pre-generated dataset with all the filters expanded. \n2) Scraped - Dataset generated realtime by adjusting sliders."""
 )
 
 if get_button:
