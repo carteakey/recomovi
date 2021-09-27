@@ -8,7 +8,6 @@ def getOMDBInfo(title_id):
     response = requests.get(API_URL+API_KEY+'&i='+title_id)
 
     if response:
-        print('Request is successful.')
         return response.json()
     else:
         print('Request returned an error.')
