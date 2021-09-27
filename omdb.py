@@ -1,7 +1,8 @@
 import http, requests
+import streamlit as st
 
 API_URL = 'http://www.omdbapi.com/?apikey='
-API_KEY = '521f6ba3' # Steal it, its free :D 
+API_KEY = st.secrets['OMDB_API_KEY'] 
 
 def getOMDBInfo(title_id):
 
