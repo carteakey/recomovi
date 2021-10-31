@@ -17,6 +17,10 @@ IMDB_SRCH_URL = "https://www.imdb.com/search/title/?title_type=feature&languages
 DEFAULT_SCRAPE = "datasets/default_scrape.csv"
 DEFAULT_KEYWORDS = "datasets/default_keywords.csv"
 
+@st.cache
+def convert_df(df):
+   return df.to_csv().encode('utf-8')
+
 
 async def fetch(session, url):
     """
@@ -129,7 +133,7 @@ def parse_search_page(html):
                     data["directors"] = ",".join(directors)
 
                 else:
-                    stars = stars = [
+                    stars = [
                         a.get_text() for a in credit_container.find_all("a")
                     ]
 
@@ -245,9 +249,9 @@ def scrape(pages, years, user_rating, genre, data_file=DEFAULT_SCRAPE, keywords_
             # Append response to dataframe
             for rec in data:
                 scrape = scrape.append(rec, ignore_index=True)
-                print(rec)
+                # print(rec)
             # Waiting randomly to not overload server and get banned :)
-            time.sleep(random.randint(3, 4))
+            time.sleep(random.randint(7,10))
             
             #check runtime
             runtime = round(time.time() - start_time, 2)

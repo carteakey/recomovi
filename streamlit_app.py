@@ -3,14 +3,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import CountVectorizer
 import streamlit as st
 import pandas as pd
-import time
-import aiohttp
-import asyncio
-import random
 import os
-
 import scrape_imdb as sc
-import utils
 import omdb
 
 # check if tmp exists, otherwise create it
@@ -30,17 +24,15 @@ def_movies = pd.read_csv(DEFAULT_SCRAPE)
 def_indices = pd.Series(def_keywords["title"])
 
 # improves subsequent loading times
-@st.cache
+@st.experimental_memo
 def getCosineSim(keywords=def_keywords):
     count = CountVectorizer()
     count_matrix = count.fit_transform(keywords["bagofwords"])
     cosine_sim = cosine_similarity(count_matrix, count_matrix)
     return cosine_sim
 
-
 # Load default cosine sim
 def_cosine_sim = getCosineSim()
-
 
 def recomovi(
     title, cosine_sim=def_cosine_sim, keywords=def_keywords, indices=def_indices
@@ -70,35 +62,37 @@ def generate_grid(title_id_list):
 
     for title_id in title_id_list:
         data = omdb.getOMDBInfo(title_id)
-        print(title_id)
+        # print(title_id)
         Titles.append(data['Title'])
         Posters.append(data['Poster'])
 
     # populate image grid
-    col0, col1, col2, col3, col4 = st.columns(5)
-    with col0:
-        st.image(Posters[0], caption=Titles[0])
-    with col1:
-        st.image(Posters[1], caption=Titles[1])
-    with col2:
-        st.image(Posters[2], caption=Titles[2])
-    with col3:
-        st.image(Posters[3], caption=Titles[3])
-    with col4:
-        st.image(Posters[4], caption=Titles[4])
+    try: 
+        col0, col1, col2, col3, col4 = st.columns(5)
+        with col0:
+            st.image(Posters[0], caption=Titles[0])
+        with col1:
+            st.image(Posters[1], caption=Titles[1])
+        with col2:
+            st.image(Posters[2], caption=Titles[2])
+        with col3:
+            st.image(Posters[3], caption=Titles[3])
+        with col4:
+            st.image(Posters[4], caption=Titles[4])
 
-    col5, col6, col7, col8, col9 = st.columns(5)
-    with col5:
-        st.image(Posters[5], caption=Titles[5])
-    with col6:
-        st.image(Posters[6], caption=Titles[6])
-    with col7:
-        st.image(Posters[7], caption=Titles[7])
-    with col8:
-        st.image(Posters[8], caption=Titles[8])
-    with col9:
-        st.image(Posters[9], caption=Titles[9])
-
+        col5, col6, col7, col8, col9 = st.columns(5)
+        with col5:
+            st.image(Posters[5], caption=Titles[5])
+        with col6:
+            st.image(Posters[6], caption=Titles[6])
+        with col7:
+            st.image(Posters[7], caption=Titles[7])
+        with col8:
+            st.image(Posters[8], caption=Titles[8])
+        with col9:
+            st.image(Posters[9], caption=Titles[9])
+    except:
+        pass
 
 # Start of Streamlit
 st.header("Get Data from IMDb")
@@ -106,7 +100,7 @@ st.header("Get Data from IMDb")
 filters = st.expander('Filters')
 
 movies_year = filters.slider(
-    "Year Range (By Release Date)", 1990, 2021, (2000, 2020))
+    "Year Range (By Release Date)", 1990, 2021, (2015, 2020))
 
 user_rating = filters.slider("User Rating", 0.1, 10.0, (0.1, 10.0), step=0.1)
 
@@ -142,9 +136,9 @@ st.header("Get Recommendations")
 
 dataset = st.radio(
     "Dataset",
-    ("Default", "Scraped"),
-    help="""1) Default - Pre-generated dataset with all the filters expanded. 
-    \n 2) Scraped - Dataset generated realtime by adjusting sliders."""
+    ("Default", "Custom"),
+    help="""Default - Pre-generated dataset with all the filters expanded. 
+    \n Custom - Dataset generated realtime by adjusting sliders."""
 )
 
 if get_button:
@@ -160,9 +154,14 @@ if get_button:
 
 else:
 
-    titles = def_movies['title']
-    movies = def_movies
+    if dataset == "Default":
+        movies = def_movies
+        titles = def_movies['title']
 
+    elif dataset == "Custom":
+        movies = pd.read_csv(CUSTOM_SCRAPE)
+        titles = movies["title"]
+    
     option = st.selectbox(
         "Movie",
         titles,
@@ -172,7 +171,7 @@ else:
     if dataset == "Default":
         recommend = recomovi(option)
 
-    if dataset == "Scraped":
+    if dataset == "Custom":
 
         if os.path.exists(CUSTOM_KEYWORDS) and os.path.isfile(CUSTOM_KEYWORDS):
 
@@ -188,7 +187,7 @@ else:
 
         else:
 
-            st.error("Please Scrape first before using this option!")
+            st.error("Get data from IMDb first before using this option!")
             st.stop()
 
     recommended_movies = movies.query("title in @recommend")
