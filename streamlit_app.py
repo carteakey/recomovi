@@ -8,7 +8,7 @@ import scrape_imdb as sc
 import omdb
 
 # check if tmp exists, otherwise create it
-tmp_dir = Path("/tmp")
+tmp_dir = Path("./tmp")
 tmp_dir.mkdir(parents=True, exist_ok=True)
 
 # globals
