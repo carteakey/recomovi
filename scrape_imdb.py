@@ -275,7 +275,7 @@ def scrape(pages, years, user_rating, genre, data_file=DEFAULT_SCRAPE, keywords_
         )
 
         csv = convert_df(scrape)
-        st.download_button('Download data as CSV', csv, file_name=None,
+        st.download_button('Download data as CSV', csv, file_name='imdb_dataset.csv',
                            mime=None, key=None, help=None, on_click=None, args=None, kwargs=None)
 
         progress_bar.progress(100)
