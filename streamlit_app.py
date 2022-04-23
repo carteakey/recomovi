@@ -159,9 +159,13 @@ else:
         titles = def_movies['title']
 
     elif dataset == "Custom":
-        movies = pd.read_csv(CUSTOM_SCRAPE)
-        titles = movies["title"]
-    
+        if os.path.exists(CUSTOM_KEYWORDS) and os.path.isfile(CUSTOM_KEYWORDS):
+            movies = pd.read_csv(CUSTOM_SCRAPE)
+            titles = movies["title"]
+        else:
+            st.error("Get data from IMDb first before using this option!")
+            st.stop()
+
     option = st.selectbox(
         "Movie",
         titles,
@@ -170,9 +174,8 @@ else:
 
     if dataset == "Default":
         recommend = recomovi(option)
-
+    
     if dataset == "Custom":
-
         if os.path.exists(CUSTOM_KEYWORDS) and os.path.isfile(CUSTOM_KEYWORDS):
 
             keywords = pd.read_csv(CUSTOM_KEYWORDS)
