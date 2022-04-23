@@ -292,6 +292,6 @@ def scrape(pages, years, user_rating, genre, data_file=DEFAULT_SCRAPE, keywords_
 if __name__ == "__main__":
 
     pages = [i for i in range(1, 251, 50)]
-    years = [i for i in range(2021, 2022)]
+    years = [i for i in range(1990, 2022)]
 
     scrape(pages, years, None, None)

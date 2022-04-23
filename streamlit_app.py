@@ -100,7 +100,7 @@ st.header("Get Data from IMDb")
 filters = st.expander('Filters')
 
 movies_year = filters.slider(
-    "Year Range (By Release Date)", 1990, 2021, (2015, 2020))
+    "Year Range (By Release Date)", 1990, 2022, (2017, 2022))
 
 user_rating = filters.slider("User Rating", 0.1, 10.0, (0.1, 10.0), step=0.1)
 
