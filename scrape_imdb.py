@@ -9,6 +9,8 @@ import time
 import pandas as pd
 import utils
 import streamlit as st
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 # globals
 IMDB_TITLE_URL = "https://www.imdb.com/title/tt"

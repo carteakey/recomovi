@@ -1,10 +1,21 @@
-Content Based Movie Recommendation System.
+# Recomovi
 
-- Configurable scraper for realtime dataset and keyword generation
-- scraped IMDb Advanced Search Page using beautifulsoup. (Top 250 movies each for year 1990-2022). Dataset of approx 8000 movies.
+Content-based Movie Recommendation App. 
+The app can be run here: 
+https://share.streamlit.io/carteakey/recomovi
+
+![Demo](/screenshots/demo.png)
+
+### Overview
+- Configurable scraper for realtime dataset and keyword generation.
+- Scrapes IMDb Advanced Search Page using beautifulsoup. (Top 250 movies each for year 1990-2022). Dataset of approx 8000 movies.
 - Rake to extract keywords from plot summary.
-- Cosine Similarity Index to filter top 10 similar movies
-- Frontend created using Streamlit
+- Cosine Similarity Index to filter top 10 similar movies.
+- Frontend created using Streamlit.
 
-The app can be run here : 
-https://share.streamlit.io/kartikey-chauhan/recomovi
+The web scraper can be run from the terminal as well. It will download the data and keywords in the datasets folder.
+```bash
+python3 -m scrape_imdb
+```
+![Terminal](/screenshots/terminal.png)
+
