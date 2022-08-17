@@ -1,8 +1,8 @@
 # Recomovi
 
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/carteakey/recomovi/)
+
 Content-based Movie Recommendation App. 
-The app can be run here:
-[share.streamlit.io/carteakey/recomovi](https://share.streamlit.io/carteakey/recomovi/).
 
 ![Demo](/screenshots/recomovi.png)
 
