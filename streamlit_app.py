@@ -7,6 +7,19 @@ import os
 import scrape_imdb as sc
 import omdb
 
+# nltk fix
+import nltk
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt')
+
+try:
+    nltk.data.find('corpora/stopwords')
+except LookupError:
+    nltk.download('stopwords')
+
+
 # check if tmp exists, otherwise create it
 tmp_dir = Path("./tmp")
 tmp_dir.mkdir(parents=True, exist_ok=True)
@@ -24,6 +37,8 @@ def_movies = pd.read_csv(DEFAULT_SCRAPE)
 def_indices = pd.Series(def_keywords["title"])
 
 # improves subsequent loading times
+
+
 @st.experimental_memo
 def getCosineSim(keywords=def_keywords):
     count = CountVectorizer()
@@ -31,8 +46,10 @@ def getCosineSim(keywords=def_keywords):
     cosine_sim = cosine_similarity(count_matrix, count_matrix)
     return cosine_sim
 
+
 # Load default cosine sim
 def_cosine_sim = getCosineSim()
+
 
 def recomovi(
     title, cosine_sim=def_cosine_sim, keywords=def_keywords, indices=def_indices
@@ -67,7 +84,7 @@ def generate_grid(title_id_list):
         Posters.append(data['Poster'])
 
     # populate image grid
-    try: 
+    try:
         col0, col1, col2, col3, col4 = st.columns(5)
         with col0:
             st.image(Posters[0], caption=Titles[0])
@@ -93,6 +110,7 @@ def generate_grid(title_id_list):
             st.image(Posters[9], caption=Titles[9])
     except:
         pass
+
 
 # Start of Streamlit
 st.header("Get Data from IMDb")
@@ -174,7 +192,7 @@ else:
 
     if dataset == "Default":
         recommend = recomovi(option)
-    
+
     if dataset == "Custom":
         if os.path.exists(CUSTOM_KEYWORDS) and os.path.isfile(CUSTOM_KEYWORDS):
 
