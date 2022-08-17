@@ -2,9 +2,9 @@
 
 Content-based Movie Recommendation App. 
 The app can be run here: 
-https://share.streamlit.io/carteakey/recomovi
+share.streamlit.io/carteakey/recomovi
 
-![Demo](/screenshots/demo.png)
+![Demo](/screenshots/recomovi.png)
 
 ### Overview
 - Configurable scraper for realtime dataset and keyword generation.
