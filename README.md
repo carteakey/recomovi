@@ -2,7 +2,7 @@
 
 # Recomovi
 
-Content-based Movie Recommendation App. 
+Content Based Movie Recommendation & IMDb Dataset Generator.
 
 ![Demo](/screenshots/recomovi.png)
 
