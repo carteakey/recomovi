@@ -19,7 +19,7 @@ IMDB_SRCH_URL = "https://www.imdb.com/search/title/?title_type=feature&languages
 DEFAULT_SCRAPE = "datasets/default_scrape.csv"
 DEFAULT_KEYWORDS = "datasets/default_keywords.csv"
 
-@st.cache
+@st.cache_data
 def convert_df(df):
    return df.to_csv().encode('utf-8')
 
@@ -163,7 +163,7 @@ async def fetch_and_parse(session, url):
 async def scrape_urls(urls):
 
     headers = {"Accept-Language": "en-US, en;q=0.5"}
-    async with aiohttp.ClientSession(headers=headers) as session:
+    async with aiohttp.ClientSession(headers=headers,trust_env=True) as session:
         return await asyncio.gather(*(fetch_and_parse(session, url) for url in urls))
 
 
@@ -294,6 +294,6 @@ def scrape(pages, years, user_rating, genre, data_file=DEFAULT_SCRAPE, keywords_
 if __name__ == "__main__":
 
     pages = [i for i in range(1, 251, 50)]
-    years = [i for i in range(1990, 2022)]
+    years = [i for i in range(1990, 2023)]
 
     scrape(pages, years, None, None)

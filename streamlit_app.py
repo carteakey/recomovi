@@ -6,6 +6,9 @@ import pandas as pd
 import os
 import scrape_imdb as sc
 import omdb
+from datetime import datetime
+
+currentYear = datetime.now().year
 
 # nltk fix
 import nltk
@@ -37,9 +40,7 @@ def_movies = pd.read_csv(DEFAULT_SCRAPE)
 def_indices = pd.Series(def_keywords["title"])
 
 # improves subsequent loading times
-
-
-@st.experimental_memo
+@st.cache_data
 def getCosineSim(keywords=def_keywords):
     count = CountVectorizer()
     count_matrix = count.fit_transform(keywords["bagofwords"])
@@ -118,7 +119,7 @@ st.header("Get Data from IMDb")
 filters = st.expander('Filters')
 
 movies_year = filters.slider(
-    "Year Range (By Release Date)", 1990, 2022, (2017, 2022))
+    "Year Range (By Release Date)", 1990, currentYear, (currentYear-5, currentYear))
 
 user_rating = filters.slider("User Rating", 0.1, 10.0, (0.1, 10.0), step=0.1)
 
